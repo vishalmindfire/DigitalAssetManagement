@@ -27,12 +27,16 @@
       "@pages/*": ["./src/pages/*"],
       "@routes/*": ["./src/routes/*"],
       "@hooks/*": ["./src/hooks/*"],
+      "@icons": ["./src/icons/index"],
+      "@icons/*": ["./src/icons/*"],
       "@contexts/*": ["./src/contexts/*"],
       "@reducers/*": ["./src/reducers/*"],
       "@services/*": ["./src/services/*"],
       "@entities/*": ["./src/entities/*"],
       "@styles/*": ["./src/styles/*"],
-      "@utils/*": ["./src/utils/*"]
+      "@utils/*": ["./src/utils/*"],
+      "@layout/*": ["./src/layout/*"],
+      "@store/*": ["./src/store/*"]
     }
   },
   "include": ["src", "vite-env.d.ts", "src/jest.setup.ts"]
