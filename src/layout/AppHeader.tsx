@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Link } from 'react-router';
-import { useSidebar } from '@contexts/SidebarContext';
+import { useSidebar } from '@hooks/useSidebar';
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);

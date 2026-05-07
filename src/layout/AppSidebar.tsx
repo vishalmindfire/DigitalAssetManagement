@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router';
 
 // Assume these icons are imported from an icon library
 import { GridIcon, FileIcon, HorizontalDots } from '@icons';
-import { useSidebar } from '@contexts/SidebarContext';
+import { useSidebar } from '@hooks/useSidebar';
 
 type NavItem = {
   name: string;

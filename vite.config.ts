@@ -29,7 +29,7 @@ export default defineConfig({
       '@styles': path.resolve(__dirname, 'src/styles'),
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@layout': path.resolve(__dirname, 'src/layout'),
-      '@store/*': path.resolve(__dirname, '/src/store/'),
+      '@store': path.resolve(__dirname, 'src/store'),
     },
   },
 });
