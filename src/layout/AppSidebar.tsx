@@ -1,10 +1,9 @@
 import { useCallback } from 'react';
 import { Link, useLocation } from 'react-router';
 
-// Assume these icons are imported from an icon library
 import { GridIcon, FileIcon, HorizontalDots } from '@icons';
 import { useSidebar } from '@hooks/useSidebar';
-
+import { useAuth } from '@hooks/useAuth';
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -25,37 +24,42 @@ const navItems: NavItem[] = [
   },
 ];
 
-const AppSidebar: React.FC = () => {
+const AppSidebar = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const { user, authenticated } = useAuth();
 
   const isActive = useCallback((path: string) => location.pathname === path, [location.pathname]);
 
   const renderMenuItems = (items: NavItem[]) => (
     <ul className="flex flex-col gap-4">
-      {items.map((nav) => (
-        <li key={nav.name}>
-          {nav.path && (
-            <Link
-              to={nav.path}
-              className={`menu-item group ${
-                isActive(nav.path) ? 'menu-item-active' : 'menu-item-inactive'
-              }`}
-            >
-              <span
-                className={`menu-item-icon-size ${
-                  isActive(nav.path) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'
-                }`}
-              >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{nav.name}</span>
+      {items.map(
+        (nav) =>
+          ((authenticated && user?.role === 'admin' && nav.name === 'Dashboard') ||
+            nav.name !== 'Dashboard') && (
+            <li key={nav.name}>
+              {nav.path && (
+                <Link
+                  to={nav.path}
+                  className={`menu-item group ${
+                    isActive(nav.path) ? 'menu-item-active' : 'menu-item-inactive'
+                  }`}
+                >
+                  <span
+                    className={`menu-item-icon-size ${
+                      isActive(nav.path) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'
+                    }`}
+                  >
+                    {nav.icon}
+                  </span>
+                  {(isExpanded || isHovered || isMobileOpen) && (
+                    <span className="menu-item-text">{nav.name}</span>
+                  )}
+                </Link>
               )}
-            </Link>
-          )}
-        </li>
-      ))}
+            </li>
+          )
+      )}
     </ul>
   );
 

@@ -1,40 +1,76 @@
-import { Table, TableBody, TableCell, TableHeader, TableRow } from '@components/ui/table';
-
+import { useMemo, useCallback } from 'react';
+import { List, type RowComponentProps } from 'react-window';
+import { Table, TableCell, TableHeader, TableRow } from '@components/ui/table';
+import { type Files } from '@entities/File';
 import Badge from '@components/ui/badge/Badge';
+import { useFiles } from '@hooks/useFiles';
 
-interface Order {
-  id: number;
-  user: {
-    image: string;
-    name: string;
-    role: string;
-  };
-  projectName: string;
-  team: {
-    images: string[];
-  };
-  status: string;
-  budget: string;
-}
+type RowData = {
+  files: Files[];
+};
 
-const tableData: Order[] = [
-  {
-    id: 1,
-    user: {
-      image: '/images/user/user-17.jpg',
-      name: 'Lindsey Curtis',
-      role: 'Web Designer',
+const ROW_HEIGHT = 60;
+
+export default function FileTable() {
+  const { files, loading, hasMore, loadMore } = useFiles();
+
+  const savedFiles = useMemo(() => files, [files]);
+
+  const itemCount = hasMore ? savedFiles.length + 1 : savedFiles.length;
+
+  const handleRowsRendered = useCallback(
+    ({ stopIndex }: { startIndex: number; stopIndex: number }) => {
+      const threshold = Math.max(0, savedFiles.length - 20);
+
+      if (stopIndex >= threshold && hasMore && !loading) {
+        loadMore();
+      }
     },
-    projectName: 'Agency Website',
-    team: {
-      images: ['/images/user/user-22.jpg', '/images/user/user-23.jpg', '/images/user/user-24.jpg'],
-    },
-    budget: '3.9K',
-    status: 'Active',
-  },
-];
+    [savedFiles.length, hasMore, loading, loadMore]
+  );
 
-export default function BasicTableOne() {
+  const rowComponent = useCallback(({ index, style, files }: RowComponentProps<RowData>) => {
+    const file = files[index];
+
+    if (!file) {
+      return (
+        <div style={style} className="flex items-center px-4 border-b">
+          Loading more...
+        </div>
+      );
+    }
+
+    return (
+      <TableRow key={file.id}>
+        <TableCell className="px-5 py-4 sm:px-6 text-start">{file.name}</TableCell>
+        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+          {file.size}
+        </TableCell>
+        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+          {new Date(file.uploadDate).toLocaleDateString('en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })}
+        </TableCell>
+        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+          <Badge
+            size="sm"
+            color={
+              file.status === 'COMPLETED'
+                ? 'success'
+                : file.status === 'PENDING' || file.status === 'PROCESSING'
+                  ? 'warning'
+                  : 'error'
+            }
+          >
+            {file.status}
+          </Badge>
+        </TableCell>
+      </TableRow>
+    );
+  }, []);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -46,19 +82,19 @@ export default function BasicTableOne() {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                User
+                Name
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Project Name
+                Size
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Team
+                Upload Date
               </TableCell>
               <TableCell
                 isHeader
@@ -66,76 +102,23 @@ export default function BasicTableOne() {
               >
                 Status
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Budget
-              </TableCell>
             </TableRow>
           </TableHeader>
-
-          {/* Table Body */}
-          <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {tableData.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="px-5 py-4 sm:px-6 text-start">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 overflow-hidden rounded-full">
-                      <img width={40} height={40} src={order.user.image} alt={order.user.name} />
-                    </div>
-                    <div>
-                      <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.user.name}
-                      </span>
-                      <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                        {order.user.role}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.projectName}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex -space-x-2">
-                    {order.team.images.map((teamImage, index) => (
-                      <div
-                        key={index}
-                        className="w-6 h-6 overflow-hidden border-2 border-white rounded-full dark:border-gray-900"
-                      >
-                        <img
-                          width={24}
-                          height={24}
-                          src={teamImage}
-                          alt={`Team member ${index + 1}`}
-                          className="w-full size-6"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <Badge
-                    size="sm"
-                    color={
-                      order.status === 'Active'
-                        ? 'success'
-                        : order.status === 'Pending'
-                          ? 'warning'
-                          : 'error'
-                    }
-                  >
-                    {order.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {order.budget}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
         </Table>
+
+        <List
+          rowCount={itemCount}
+          rowHeight={ROW_HEIGHT}
+          rowComponent={rowComponent}
+          rowProps={{
+            files,
+          }}
+          style={{
+            height: 600,
+            width: '100%',
+          }}
+          onRowsRendered={handleRowsRendered}
+        />
       </div>
     </div>
   );

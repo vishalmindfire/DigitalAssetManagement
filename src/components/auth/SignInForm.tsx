@@ -1,18 +1,33 @@
-import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@hooks/auth';
-import { login } from '@reducers/authSlice';
+import { useRef, useState } from 'react';
+import { useAuth } from '@hooks/useAuth';
 import { EyeCloseIcon, EyeIcon } from '@icons';
 import Label from '@components/form/Label';
 import Input from '@components/form/input/InputField';
 import Button from '@components/ui/button/Button';
+import { login } from '@services/authService';
+import { login as dispatchLogin } from '@reducers/authSlice';
 
 export default function SignInForm() {
-  const dispatch = useAppDispatch();
-  const { loading } = useAppSelector((state) => state.auth);
+  const { loading, dispatch } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = () => {
-    dispatch(login({ email: 'test@test.com', password: '123456' }));
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passRef = useRef<HTMLInputElement>(null);
+
+  const handleLogin = async () => {
+    setError(null);
+    try {
+      const userEmail = emailRef.current?.value ?? '';
+      const userPassword = passRef.current?.value ?? '';
+      console.log(userEmail);
+      const response = await login(userEmail, userPassword);
+      console.log(response);
+      dispatch(dispatchLogin(response.user));
+    } catch (err) {
+      console.log(err);
+      setError(err instanceof Error ? err.message : 'Login failed');
+    }
   };
 
   return (
@@ -34,7 +49,7 @@ export default function SignInForm() {
                   <Label>
                     Email <span className="text-error-500">*</span>{' '}
                   </Label>
-                  <Input placeholder="info@gmail.com" />
+                  <Input placeholder="info@gmail.com" ref={emailRef} />
                 </div>
                 <div>
                   <Label>
@@ -44,6 +59,7 @@ export default function SignInForm() {
                     <Input
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
+                      ref={passRef}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -57,6 +73,7 @@ export default function SignInForm() {
                     </span>
                   </div>
                 </div>
+                {error && <p className="text-sm text-error-500">{error}</p>}
                 <div>
                   <Button className="w-full" size="sm" onClick={handleLogin} disabled={loading}>
                     Sign in

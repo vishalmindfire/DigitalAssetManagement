@@ -8,7 +8,16 @@ type errorComponent = {
 
 type ErrorDetail = {
   error: Error;
-  errorInfo: React.ErrorInfo;
-  context: errorComponent;
+  errorInfo?: React.ErrorInfo;
+  context?: errorComponent;
 };
+
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export { type ErrorDetail, type errorComponent };
