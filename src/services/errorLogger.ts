@@ -29,10 +29,11 @@ const logErrorToServer = async (errorDetail: ErrorDetail, user: User | null) => 
       body: JSON.stringify(errorData),
       keepalive: true,
     });
-  } catch (err) {
-    console.error('Failed to log error to server:', err);
+  } catch (error) {
     const failedErrorLogs = JSON.parse(localStorage.getItem('failedErrorLogs') || '[]');
-    failedErrorLogs.push(errorData);
+    failedErrorLogs.push({
+      Error: error,
+    });
     localStorage.setItem('failedErrorLogs', JSON.stringify(failedErrorLogs));
   }
 };
