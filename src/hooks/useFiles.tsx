@@ -9,10 +9,17 @@ export function useFiles() {
   const { authenticated, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (authenticated && user?.id && filesState.files.length === 0 && !filesState.loading) {
+    if (
+      authenticated &&
+      user?.id &&
+      filesState.files.length === 0 &&
+      !filesState.loading &&
+      !filesState.error
+    ) {
       dispatch(fetchFiles());
     }
-  }, [authenticated, user?.id, filesState.files.length, filesState.loading, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated, user?.id, dispatch]);
 
   const loadMore = async () => {
     if (filesState.loading || !filesState.hasMore || filesState.error) {
