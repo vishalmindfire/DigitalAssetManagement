@@ -6,12 +6,12 @@ import Login from '@pages/AuthPages/SignIn';
 import ErrorPage from '@pages/OtherPage/Error';
 
 function ProtectedRoute() {
-  const { authenticated, loading } = useAuth();
+  const { authenticated, loading, checked } = useAuth();
+
+  if (!checked || loading) return <Spinner />;
 
   return (
-    <ErrorBoundary fallback={<ErrorPage />}>
-      {!authenticated ? !loading ? <Login /> : <Spinner /> : <Outlet />}
-    </ErrorBoundary>
+    <ErrorBoundary fallback={<ErrorPage />}>{authenticated ? <Outlet /> : <Login />}</ErrorBoundary>
   );
 }
 

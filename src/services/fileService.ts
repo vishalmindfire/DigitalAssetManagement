@@ -43,7 +43,7 @@ export class FileService {
 
     const response = await fetch(`${API_URL}/files?${params.toString()}`, {
       method: 'GET',
-      //credentials: 'include',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -71,26 +71,33 @@ export class FileService {
   ): Promise<void> {
     const getUploadFiles: Files[] = await Promise.all(
       files.map(async (file: File) => {
+        const fileData = {
+          name: file.name,
+          size: file.size,
+          mimeType: file.type,
+        };
         const response = await fetch(`${API_URL}/upload`, {
           method: 'POST',
-          //credentials: 'include',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify(fileData),
         });
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error('Project creation Failed');
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new ApiError(errData.message ?? 'Failed to upload file', response.status);
         }
+        const data = await response.json();
         return {
-          id: data.file.id,
-          name: data.file.name,
-          size: data.file.size,
-          mimeType: data.file.mimeType,
-          status: data.file.status,
-          progress: data.file.progress,
-          objectKey: data.file.objectKey,
-          uploadDate: data.file.uploadDate,
+          id: data.id,
+          name: data.name,
+          size: data.size,
+          mimeType: data.mimeType,
+          status: data.status,
+          progress: data.progress,
+          objectKey: data.objectKey,
+          uploadDate: data.uploadDate,
           url: data.url,
           file: file,
         };
@@ -108,6 +115,8 @@ export class FileService {
             const progress = Math.round((e.loaded / e.total) * 100);
             const status = newFile.status;
             appDispatcher(updateFileProgress({ id, progress, status }));
+
+            updateProgress(progress);
           }
         });
 

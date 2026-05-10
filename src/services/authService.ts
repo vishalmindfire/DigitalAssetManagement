@@ -73,7 +73,7 @@ export const isAuthenticated = async (): Promise<{
     const data = await response.json();
     return {
       isAuthenticated: true,
-      user: data.user,
+      user: data,
     };
   } catch (error) {
     logError(error, 'Authentication check failed');

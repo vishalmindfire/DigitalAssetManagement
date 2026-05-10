@@ -145,7 +145,7 @@ const fileSlice = createSlice({
       .addCase(fetchFiles.rejected, (state, action) => {
         state.loading = false;
 
-        state.error = action.error.message ?? 'Failed to fetch files';
+        state.error = action.payload?.message ?? action.error.message ?? 'Failed to fetch files';
       });
   },
 });

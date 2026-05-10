@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { List, type RowComponentProps } from 'react-window';
-import { Table, TableCell, TableHeader, TableRow } from '@components/ui/table';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@components/ui/table';
 import { type Files } from '@entities/File';
 import Badge from '@components/ui/badge/Badge';
 import { useFiles } from '@hooks/useFiles';
@@ -104,21 +104,22 @@ export default function FileTable() {
               </TableCell>
             </TableRow>
           </TableHeader>
+          <TableBody>
+            <List
+              rowCount={itemCount}
+              rowHeight={ROW_HEIGHT}
+              rowComponent={rowComponent}
+              rowProps={{
+                files,
+              }}
+              style={{
+                height: 600,
+                width: '100%',
+              }}
+              onRowsRendered={handleRowsRendered}
+            />
+          </TableBody>
         </Table>
-
-        <List
-          rowCount={itemCount}
-          rowHeight={ROW_HEIGHT}
-          rowComponent={rowComponent}
-          rowProps={{
-            files,
-          }}
-          style={{
-            height: 600,
-            width: '100%',
-          }}
-          onRowsRendered={handleRowsRendered}
-        />
       </div>
     </div>
   );
