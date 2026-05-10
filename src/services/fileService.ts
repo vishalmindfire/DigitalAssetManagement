@@ -21,7 +21,7 @@ export interface FileResponseType {
   mime_type: string;
   size: number;
   objectKey: string;
-  storage_path: string;
+  status: string;
 }
 export class FileService {
   static async getFiles(
@@ -59,6 +59,7 @@ export class FileService {
         name: file.name,
         size: file.size,
         uploadDate: file.created_at,
+        status: file.status
       };
     });
     return { success: true, files: files, nextCursor: data.nextCursor };
@@ -110,6 +111,7 @@ export class FileService {
         appDispatcher(addFile(newFile));
         const xhr = new XMLHttpRequest();
         const id = fileInfo.id;
+        FileService.updateFileSatus(id, "PROCESSING");
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
             const progress = Math.round((e.loaded / e.total) * 100);
@@ -125,10 +127,12 @@ export class FileService {
             const progress = 100;
             const status = 'COMPLETED';
             appDispatcher(updateFileProgress({ id, progress, status }));
+            FileService.updateFileSatus(id, status);
           } else {
             const progress = 0;
             const status = 'FAILED';
             appDispatcher(updateFileProgress({ id, progress, status }));
+            FileService.updateFileSatus(id, status);
           }
         });
 
@@ -136,6 +140,7 @@ export class FileService {
           const progress = 0;
           const status = 'FAILED';
           appDispatcher(updateFileProgress({ id, progress, status }));
+          FileService.updateFileSatus(id, status);
         });
 
         xhr.open('PUT', fileInfo.url);
@@ -144,6 +149,24 @@ export class FileService {
         return xhr;
       })
     );
+  }
+
+  static async updateFileSatus(
+    id: string,
+    status: Files['status']
+  ): Promise<Files> {
+    const response = await fetch(`${API_URL}/files/${id}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new ApiError(errData.message ?? 'Failed to update file', response.status);
+    }
+    const data = await response.json();
+    return data.file;
   }
 
   static logError(error: unknown, stack: string): void {
