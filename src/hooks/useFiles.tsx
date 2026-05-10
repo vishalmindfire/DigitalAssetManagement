@@ -1,33 +1,25 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useDispatch, useSelector, useStore } from 'react-redux';
+import { useEffect, useCallback } from 'react';
 import type { RootState, AppDispatch } from '@store/store';
 import { fetchFiles } from '@reducers/fileSlice';
 
 export function useFiles() {
   const dispatch = useDispatch<AppDispatch>();
+  const store = useStore<RootState>();
   const filesState = useSelector((state: RootState) => state.file);
   const { authenticated, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (
-      authenticated &&
-      user?.id &&
-      filesState.files.length === 0 &&
-      !filesState.loading &&
-      !filesState.error
-    ) {
+    if (authenticated && user?.id && !filesState.initialFetchDone) {
       dispatch(fetchFiles());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, user?.id, dispatch]);
+  }, [authenticated, user?.id, filesState.initialFetchDone, dispatch]);
 
-  const loadMore = async () => {
-    if (filesState.loading || !filesState.hasMore || filesState.error) {
-      return;
-    }
-
+  const loadMore = useCallback(async () => {
+    const { loading, hasMore, error } = store.getState().file;
+    if (loading || !hasMore || error) return;
     await dispatch(fetchFiles());
-  };
+  }, [dispatch, store]);
 
   return {
     ...filesState,

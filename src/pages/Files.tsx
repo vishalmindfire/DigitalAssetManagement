@@ -15,7 +15,7 @@ export default function Files() {
         <div className="space-y-4">
           <DropzoneComponent />
         </div>
-        <div className="space-y-8">{<FileTable />}</div>
+        <div className="space-y-8">{<FileTable section="user" />}</div>
       </div>
     </div>
   );

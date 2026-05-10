@@ -18,10 +18,13 @@ export interface FileResponseType {
   created_at: Date;
   id: number;
   name: string;
-  mime_type: string;
+  mimeType: string;
   size: number;
   objectKey: string;
   status: string;
+  createdDate: string;
+  uploadDate: string;
+  userId: string;
 }
 export class FileService {
   static async getFiles(
@@ -34,11 +37,11 @@ export class FileService {
   ): Promise<filesResponse> {
     const params = new URLSearchParams();
     params.append('userid', userId);
-    params.append('limit', limit.toString());
+    params.append('limit', String(limit));
 
     if (cursor !== null && cursor !== undefined) {
-      params.append('fileid', cursor.fileId.toString());
-      params.append('createdate', cursor.createDate.toString());
+      params.append('fileid', cursor.fileId);
+      params.append('createdate', String(cursor.createDate));
     }
 
     const response = await fetch(`${API_URL}/files?${params.toString()}`, {
@@ -58,8 +61,9 @@ export class FileService {
         id: file.id,
         name: file.name,
         size: file.size,
-        uploadDate: file.created_at,
-        status: file.status
+        status: file.status,
+        userId: file.userId,
+        uploadDate: file.createdDate,
       };
     });
     return { success: true, files: files, nextCursor: data.nextCursor };
@@ -111,7 +115,7 @@ export class FileService {
         appDispatcher(addFile(newFile));
         const xhr = new XMLHttpRequest();
         const id = fileInfo.id;
-        FileService.updateFileSatus(id, "PROCESSING");
+        FileService.updateFileSatus(id, 'PROCESSING');
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
             const progress = Math.round((e.loaded / e.total) * 100);
@@ -151,10 +155,7 @@ export class FileService {
     );
   }
 
-  static async updateFileSatus(
-    id: string,
-    status: Files['status']
-  ): Promise<Files> {
+  static async updateFileSatus(id: string, status: Files['status']): Promise<Files> {
     const response = await fetch(`${API_URL}/files/${id}`, {
       method: 'PATCH',
       credentials: 'include',

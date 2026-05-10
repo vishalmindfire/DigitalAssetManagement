@@ -1,15 +1,20 @@
-import { useMemo, useCallback, useRef } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { List, type RowComponentProps } from 'react-window';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@components/ui/table';
 import { type Files } from '@entities/File';
 import Badge from '@components/ui/badge/Badge';
 import { useFiles } from '@hooks/useFiles';
+import { useAuth } from '@hooks/useAuth';
+import Popup from '@components/ui/modal/Popup';
 
+type FilesProp = {
+  section: string;
+};
 type RowData = {
   files: Files[];
 };
 
-const ROW_HEIGHT = 60;
+const ROW_HEIGHT = 45;
 
 const COLS = [
   { label: 'Name', width: 'flex-[3]' },
@@ -23,22 +28,27 @@ const HEADER_CELL =
 const BODY_CELL =
   'px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 flex items-center';
 
-export default function FileTable() {
+export default function FileTable({ section }: FilesProp) {
+  const [fileError, setFileError] = useState<string | null>(null);
   const { files, loading, hasMore, loadMore } = useFiles();
-
-  const savedFiles = useMemo(() => ({ files: files }), [files]);
+  const { user } = useAuth();
+  const filteredFiles = files.filter((file) => file.userId === user?.id);
+  const savedFiles = useMemo(
+    () => ({ files: section === 'admin' ? files : filteredFiles }),
+    [files, filteredFiles, section]
+  );
 
   const itemCount = hasMore ? savedFiles.files.length + 1 : savedFiles.files.length;
-  const fetchingRef = useRef(false);
 
   const handleRowsRendered = useCallback(
     ({ stopIndex }: { startIndex: number; stopIndex: number }) => {
-      if (!hasMore || loading || fetchingRef.current) return;
+      if (!hasMore || loading) return;
       if (stopIndex >= itemCount - 1) {
-        fetchingRef.current = true;
-        loadMore().finally(() => {
-          fetchingRef.current = false;
-        });
+        try {
+          loadMore();
+        } catch (error) {
+          setFileError(error instanceof Error ? error.message : 'Unexpected Error');
+        }
       }
     },
     [itemCount, hasMore, loading, loadMore]
@@ -87,30 +97,40 @@ export default function FileTable() {
   }, []);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      <div className="max-w-full overflow-x-auto">
-        <Table>
-          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-            <TableRow>
-              {COLS.map((col) => (
-                <TableCell key={col.label} isHeader className={`${col.width} ${HEADER_CELL}`}>
-                  {col.label}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <List
-              rowCount={itemCount}
-              rowHeight={ROW_HEIGHT}
-              rowComponent={rowComponent}
-              rowProps={savedFiles}
-              style={{ height: 500, width: '100%' }}
-              onRowsRendered={handleRowsRendered}
-            />
-          </TableBody>
-        </Table>
+    <>
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+        <div className="max-w-full overflow-x-auto">
+          <Table>
+            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+              <TableRow>
+                {COLS.map((col) => (
+                  <TableCell key={col.label} isHeader className={`${col.width} ${HEADER_CELL}`}>
+                    {col.label}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <List
+                rowCount={itemCount}
+                rowHeight={ROW_HEIGHT}
+                rowComponent={rowComponent}
+                rowProps={savedFiles}
+                style={{ height: 500, width: '100%' }}
+                onRowsRendered={handleRowsRendered}
+              />
+            </TableBody>
+          </Table>
+        </div>
       </div>
-    </div>
+      <Popup
+        open={fileError !== null}
+        onClose={() => {
+          setFileError(null);
+        }}
+        title="Error"
+        message={fileError ?? ''}
+      />
+    </>
   );
 }

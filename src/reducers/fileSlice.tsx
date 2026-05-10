@@ -15,6 +15,7 @@ type FileState = {
   loading: boolean;
   error: unknown;
   limit: number;
+  initialFetchDone: boolean;
 };
 
 const initialState: FileState = {
@@ -23,7 +24,8 @@ const initialState: FileState = {
   hasMore: true,
   loading: false,
   error: null,
-  limit: 100,
+  limit: 1,
+  initialFetchDone: false,
 };
 
 export const fetchFiles = createAsyncThunk<
@@ -33,33 +35,36 @@ export const fetchFiles = createAsyncThunk<
     state: RootState;
     rejectValue: ApiError;
   }
->('files/fetchFiles', async (_, thunkAPI) => {
-  const state = thunkAPI.getState() as RootState;
-
-  const userId = state.auth.user?.id;
-  if (!userId) {
-    return thunkAPI.rejectWithValue({
-      name: 'File Fetch Error',
-      message: 'You are not logged in.',
-      status: 400,
-    });
+>(
+  'files/fetchFiles',
+  async (_, thunkAPI) => {
+    const state = thunkAPI.getState() as RootState;
+    const userId = state.auth.user?.id;
+    if (!userId) {
+      return thunkAPI.rejectWithValue({
+        name: 'File Fetch Error',
+        message: 'You are not logged in.',
+        status: 400,
+      });
+    }
+    try {
+      const response = await FileService.getFiles(userId, state.file.nextCursor, state.file.limit);
+      return response;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error instanceof ApiError
+          ? { ...error }
+          : { name: 'File Fetch Error', message: 'Unexpected error occured', status: 500 }
+      );
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const { loading, hasMore } = (getState() as RootState).file;
+      return !loading && hasMore;
+    },
   }
-  try {
-    const response = await FileService.getFiles(userId, state.file.nextCursor, state.file.limit);
-
-    return response;
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      error instanceof ApiError
-        ? error
-        : {
-            name: 'File Fetch Error',
-            message: 'Unexpected error occured',
-            status: 500,
-          }
-    );
-  }
-});
+);
 
 const fileSlice = createSlice({
   name: 'files',
@@ -123,6 +128,10 @@ const fileSlice = createSlice({
 
     clearFiles: (state) => {
       state.files = [];
+      state.initialFetchDone = false;
+      state.nextCursor = null;
+      state.hasMore = true;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -130,6 +139,7 @@ const fileSlice = createSlice({
       .addCase(fetchFiles.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.initialFetchDone = true;
       })
 
       .addCase(fetchFiles.fulfilled, (state, action) => {
@@ -158,5 +168,11 @@ export const {
   removeFile,
   clearFiles,
 } = fileSlice.actions;
+
+export const selectFileById = (state: RootState, id: string) =>
+  state.file.files.find((file) => file.id === id);
+
+export const selectFilesByUserId = (state: RootState) =>
+  state.file.files.filter((file) => file.userId === state.auth.user?.id);
 
 export default fileSlice.reducer;

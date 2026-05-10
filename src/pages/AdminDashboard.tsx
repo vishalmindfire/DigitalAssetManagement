@@ -20,7 +20,7 @@ export default function AdminDashboard() {
         <div className="col-span-12 xl:col-span-5"></div>
 
         <div className="col-span-12">
-          <FilesTable />
+          <FilesTable section="admin" />
         </div>
       </div>
     </>

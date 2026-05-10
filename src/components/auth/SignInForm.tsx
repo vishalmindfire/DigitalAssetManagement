@@ -20,12 +20,9 @@ export default function SignInForm() {
     try {
       const userEmail = emailRef.current?.value ?? '';
       const userPassword = passRef.current?.value ?? '';
-      console.log(userEmail);
       const response = await login(userEmail, userPassword);
-      console.log(response);
       dispatch(dispatchLogin(response.user));
     } catch (err) {
-      console.log(err);
       setError(err instanceof Error ? err.message : 'Login failed');
     }
   };
