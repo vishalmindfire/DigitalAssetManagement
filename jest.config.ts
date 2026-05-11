@@ -24,7 +24,7 @@ const config: Config = {
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@store/(.*)$': '<rootDir>/src/store/$1',
     '^@layout/(.*)$': '<rootDir>/src/layout/$1',
-    '^@icons$': '<rootDir>/src/__mocks__/iconsMock.ts',
+    '^@icons$': '<rootDir>/tests/mocks/iconsMock.ts',
   },
   globals: {
     fetch: global.fetch,
