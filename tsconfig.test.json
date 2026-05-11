@@ -2,15 +2,15 @@
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "Node16",
-    "moduleResolution": "node16",
-    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "noEmit": true,
     "strict": false,
     "isolatedModules": true,
+    "types": ["vite/client"],
     "paths": {
       "@components/*": ["./src/components/*"],
       "@pages/*": ["./src/pages/*"],
@@ -27,5 +27,5 @@
       "@store/*": ["./src/store/*"]
     }
   },
-  "include": ["src", "tests"]
+  "include": ["tests"]
 }

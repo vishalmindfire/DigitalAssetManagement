@@ -1,5 +1,9 @@
-export const EyeIcon = () => null;
-export const EyeCloseIcon = () => null;
-export const FileIcon = () => null;
-export const GridIcon = () => null;
-export const HorizontalDots = () => null;
+import type { SVGProps } from 'react';
+
+const noop = (_props: SVGProps<SVGSVGElement>) => null;
+
+export const EyeIcon = noop;
+export const EyeCloseIcon = noop;
+export const FileIcon = noop;
+export const GridIcon = noop;
+export const HorizontalDots = noop;
