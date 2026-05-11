@@ -4,7 +4,6 @@ const config: Config = {
   verbose: true,
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
-  preset: 'jest-puppeteer',
   modulePaths: ['<rootDir>/src/'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   moduleNameMapper: {
@@ -23,12 +22,31 @@ const config: Config = {
     '^@routes/(.*)$': '<rootDir>/src/routes/$1',
 
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+    '^@store/(.*)$': '<rootDir>/src/store/$1',
+    '^@layout/(.*)$': '<rootDir>/src/layout/$1',
+    '^@icons$': '<rootDir>/src/__mocks__/iconsMock.ts',
   },
   globals: {
     fetch: global.fetch,
   },
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        diagnostics: false,
+        tsconfig: {
+          target: 'ES2020',
+          lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+          module: 'CommonJS',
+          jsx: 'react-jsx',
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+          skipLibCheck: true,
+          strict: false,
+          isolatedModules: true,
+        },
+      },
+    ],
   },
 };
 

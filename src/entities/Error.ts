@@ -11,7 +11,6 @@ type ErrorDetail = {
   errorInfo?: React.ErrorInfo;
   context?: errorComponent;
 };
-
 export class ApiError extends Error {
   status: number;
   constructor(message: string, status: number) {

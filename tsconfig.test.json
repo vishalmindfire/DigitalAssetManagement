@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "strict": false,
+    "isolatedModules": true,
+    "paths": {
+      "@components/*": ["./src/components/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@routes/*": ["./src/routes/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@icons": ["./src/__mocks__/iconsMock"],
+      "@contexts/*": ["./src/contexts/*"],
+      "@reducers/*": ["./src/reducers/*"],
+      "@services/*": ["./src/services/*"],
+      "@entities/*": ["./src/entities/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@layout/*": ["./src/layout/*"],
+      "@store/*": ["./src/store/*"]
+    }
+  },
+  "include": ["src", "tests"]
+}
