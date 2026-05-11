@@ -16,7 +16,7 @@
       "@pages/*": ["./src/pages/*"],
       "@routes/*": ["./src/routes/*"],
       "@hooks/*": ["./src/hooks/*"],
-      "@icons": ["./test/mocks/iconsMock"],
+      "@icons": ["./tests/mocks/iconsMock"],
       "@contexts/*": ["./src/contexts/*"],
       "@reducers/*": ["./src/reducers/*"],
       "@services/*": ["./src/services/*"],
