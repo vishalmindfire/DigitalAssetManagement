@@ -18,6 +18,7 @@ interface TableBodyProps {
 interface TableRowProps {
   children: ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
 interface TableCellProps {
@@ -50,9 +51,9 @@ const TableBody: React.FC<TableBodyProps> = ({ children, className }) => {
   );
 };
 
-const TableRow: React.FC<TableRowProps> = ({ children, className }) => {
+const TableRow: React.FC<TableRowProps> = ({ children, className, onClick }) => {
   return (
-    <div role="row" className={`flex ${className ?? ''}`}>
+    <div role="row" className={`flex ${className ?? ''}`} onClick={onClick}>
       {children}
     </div>
   );

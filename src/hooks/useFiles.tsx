@@ -13,7 +13,7 @@ export function useFiles() {
     if (authenticated && user?.id && !filesState.initialFetchDone) {
       dispatch(fetchFiles());
     }
-  }, [authenticated, user?.id, filesState.initialFetchDone, dispatch]);
+  }, [authenticated, user?.id, filesState.initialFetchDone, dispatch, filesState.searchValue]);
 
   const loadMore = useCallback(async () => {
     const { loading, hasMore, error } = store.getState().file;

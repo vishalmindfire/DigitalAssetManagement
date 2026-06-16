@@ -1,24 +1,25 @@
 type AspectRatioVideoProps = {
-  videoUrl: string; // URL of the video
-  aspectRatio?: string; // Aspect ratio in the format "width/height", default is "16/9"
-  title?: string; // Video title, default is "Embedded Video"
+  videoUrl: string; 
+  aspectRatio?: string; 
+  title?: string;
+  className?: string
 };
 
-const AspectRatioVideo: React.FC<AspectRatioVideoProps> = ({
+const AspectRatioVideo = ({
   videoUrl,
-  aspectRatio = 'video', // Default aspect ratio
+  aspectRatio = 'video',
   title = 'Embedded Video',
-}) => {
+  className
+}: AspectRatioVideoProps) => {
   return (
-    <div className={`aspect-${aspectRatio} overflow-hidden rounded-lg`}>
-      <iframe
-        src={videoUrl}
-        title={title}
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        className="w-full h-full"
-      ></iframe>
+    <div className={`aspect-${aspectRatio} overflow-hidden rounded-lg ${className}`}>
+      <video
+      controls
+      width="100%"
+      preload="metadata"
+    >
+      <source src={videoUrl} type="video/mp4" />
+    </video>
     </div>
   );
 };

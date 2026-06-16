@@ -33,7 +33,8 @@ export class FileService {
       fileId: string;
       createDate: Date;
     } | null,
-    limit: number
+    limit: number,
+    search: string | null
   ): Promise<filesResponse> {
     const params = new URLSearchParams();
     params.append('userid', userId);
@@ -42,6 +43,10 @@ export class FileService {
     if (cursor !== null && cursor !== undefined) {
       params.append('fileid', cursor.fileId);
       params.append('createdate', String(cursor.createDate));
+    }
+
+    if(search){
+       params.append('search', search);
     }
 
     const response = await fetch(`${API_URL}/files?${params.toString()}`, {
@@ -102,8 +107,9 @@ export class FileService {
           status: data.status,
           progress: data.progress,
           objectKey: data.objectKey,
-          uploadDate: data.uploadDate,
+          uploadDate: data.createDate,
           url: data.url,
+          userId: data.userId,
           file: file,
         };
       })
@@ -161,6 +167,34 @@ export class FileService {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
+    });
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new ApiError(errData.message ?? 'Failed to update file', response.status);
+    }
+    const data = await response.json();
+    return data.file;
+  }
+
+  static async filterFilesByTag(tag: string): Promise<Files> {
+    const response = await fetch(`${API_URL}/files/tag/${tag}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new ApiError(errData.message ?? 'Failed to update file', response.status);
+    }
+    const data = await response.json();
+    return data.file;
+  }
+
+  static async filterFilesByID(id: string): Promise<Files> {
+    const response = await fetch(`${API_URL}/files/${id}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
     });
     if (!response.ok) {
       const errData = await response.json();

@@ -32,6 +32,8 @@ const DropzoneComponent: React.FC = () => {
       'image/jpeg': [],
       'image/webp': [],
       'image/svg+xml': [],
+      'video/mp4': [],
+      'video/mpeg': []
     },
   });
   return (
@@ -95,7 +97,7 @@ const DropzoneComponent: React.FC = () => {
               <Table>
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                   {files.map((file, index) => (
-                    <TableRow key={index}>
+                    <TableRow key={index} className="justify-between">
                       <TableCell className="px-5 py-4 sm:px-6 text-start">
                         <div className="flex items-center gap-3">{file.name}</div>
                       </TableCell>

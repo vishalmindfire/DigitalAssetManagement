@@ -16,6 +16,7 @@ type FileState = {
   error: unknown;
   limit: number;
   initialFetchDone: boolean;
+  searchValue: string | null;
 };
 
 const initialState: FileState = {
@@ -26,6 +27,7 @@ const initialState: FileState = {
   error: null,
   limit: 1,
   initialFetchDone: false,
+  searchValue: null
 };
 
 export const fetchFiles = createAsyncThunk<
@@ -48,7 +50,7 @@ export const fetchFiles = createAsyncThunk<
       });
     }
     try {
-      const response = await FileService.getFiles(userId, state.file.nextCursor, state.file.limit);
+      const response = await FileService.getFiles(userId, state.file.nextCursor, state.file.limit, state.file.searchValue);
       return response;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -71,7 +73,7 @@ const fileSlice = createSlice({
   initialState,
   reducers: {
     addFile: (state, action: PayloadAction<Files>) => {
-      state.files.push(action.payload);
+      state.files = [action.payload, ...state.files];
     },
     updateFileProgress: (
       state,
@@ -87,6 +89,17 @@ const fileSlice = createSlice({
         file.progress = action.payload.progress;
         file.status = action.payload.status;
       }
+    },
+    updateFile: (
+      state,
+      action: PayloadAction<Files>
+    ) => {
+        state.files = state.files.map((file) => {
+                                        if(file.id === action.payload.id){
+                                                            file.url = action.payload.url;
+                                                          }
+                                                          return file;
+                                      })
     },
 
     markFileUploaded: (
@@ -133,6 +146,12 @@ const fileSlice = createSlice({
       state.hasMore = true;
       state.error = null;
     },
+
+    setSearchValue: (state , action: PayloadAction<{
+                        search: string | null;
+                      }>) => {
+       state.searchValue = action.payload.search;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -144,8 +163,7 @@ const fileSlice = createSlice({
 
       .addCase(fetchFiles.fulfilled, (state, action) => {
         state.loading = false;
-
-        state.files.push(...action.payload.files);
+        state.files = [...state.files, ...action.payload.files];
 
         state.nextCursor = action.payload.nextCursor;
 
@@ -167,6 +185,8 @@ export const {
   markFileFailed,
   removeFile,
   clearFiles,
+  setSearchValue,
+  updateFile
 } = fileSlice.actions;
 
 export const selectFileById = (state: RootState, id: string) =>
