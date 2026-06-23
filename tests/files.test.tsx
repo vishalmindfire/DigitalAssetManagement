@@ -41,6 +41,7 @@ jest.mock('react-window', () => ({
     }
     return <div data-testid="virtual-list">{items}</div>;
   },
+  useDynamicRowHeight: () => () => 45,
 }));
 
 import '@testing-library/jest-dom/jest-globals';
@@ -106,6 +107,7 @@ type StoreOverride = {
 function makeStore(overrides: StoreOverride = {}) {
   return configureStore({
     reducer: { auth: authReducer, file: fileReducer },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
     preloadedState: {
       auth: {
         user: mockUser,
