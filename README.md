@@ -15,17 +15,17 @@ A production-ready Digital Asset Management (DAM) system built with React, TypeS
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React 19 + TypeScript |
-| Build | Vite 8 with HTTPS (mkcert) |
-| State | Redux Toolkit |
-| Routing | React Router v7 |
-| Styling | Tailwind CSS v4 |
-| Virtualization | react-window + react-window-infinite-loader |
-| File Upload | react-dropzone |
-| Testing | Jest + React Testing Library |
-| Containerization | Docker (Node 18 → Nginx Alpine) |
+| Layer            | Technology                                  |
+| ---------------- | ------------------------------------------- |
+| Framework        | React 19 + TypeScript                       |
+| Build            | Vite 8 with HTTPS (mkcert)                  |
+| State            | Redux Toolkit                               |
+| Routing          | React Router v7                             |
+| Styling          | Tailwind CSS v4                             |
+| Virtualization   | react-window + react-window-infinite-loader |
+| File Upload      | react-dropzone                              |
+| Testing          | Jest + React Testing Library                |
+| Containerization | Docker (Node 18 → Nginx Alpine)             |
 
 ## Project Structure
 
@@ -86,10 +86,10 @@ npm run preview
 
 ## Environment Variables
 
-| Variable | Description | Default (dev) |
-|---|---|---|
-| `VITE_API_URL` | Backend API base URL | `https://www.cpfsystem.local:4000` |
-| `VITE_API_ENABLED` | Enable/disable API calls | `true` |
+| Variable           | Description              | Default (dev)                      |
+| ------------------ | ------------------------ | ---------------------------------- |
+| `VITE_API_URL`     | Backend API base URL     | `https://www.cpfsystem.local:4000` |
+| `VITE_API_ENABLED` | Enable/disable API calls | `true`                             |
 
 Create `.env.development` for local overrides (see `.env.docker` for Docker values).
 
@@ -103,33 +103,34 @@ docker run -p 80:80 -p 443:443 dam-frontend
 ```
 
 The Nginx configuration:
+
 - Redirects HTTP → HTTPS
 - Serves the Vite build as static files
 - Proxies `/api/*` → `http://node:4000`
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start Vite dev server with HTTPS |
-| `npm run build` | TypeScript check + production build |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Auto-fix lint issues |
-| `npm run format` | Format with Prettier |
-| `npm test` | Run Jest tests |
-| `npm run test:watch` | Jest in watch mode |
+| Command              | Description                         |
+| -------------------- | ----------------------------------- |
+| `npm run dev`        | Start Vite dev server with HTTPS    |
+| `npm run build`      | TypeScript check + production build |
+| `npm run lint`       | Run ESLint                          |
+| `npm run lint:fix`   | Auto-fix lint issues                |
+| `npm run format`     | Format with Prettier                |
+| `npm test`           | Run Jest tests                      |
+| `npm run test:watch` | Jest in watch mode                  |
 
 ## API Overview
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/users/login` | Email + password login |
-| `POST` | `/users/logout` | Clear session |
-| `POST` | `/users/checkAuth` | Verify session, get user info |
-| `GET` | `/files` | Paginated file list (cursor-based) |
-| `POST` | `/upload` | Initialize upload, get presigned S3 URL |
-| `PATCH` | `/files/:id` | Update file status |
-| `GET` | `/files/:id` | Get single file details |
+| Method  | Endpoint           | Description                             |
+| ------- | ------------------ | --------------------------------------- |
+| `POST`  | `/users/login`     | Email + password login                  |
+| `POST`  | `/users/logout`    | Clear session                           |
+| `POST`  | `/users/checkAuth` | Verify session, get user info           |
+| `GET`   | `/files`           | Paginated file list (cursor-based)      |
+| `POST`  | `/upload`          | Initialize upload, get presigned S3 URL |
+| `PATCH` | `/files/:id`       | Update file status                      |
+| `GET`   | `/files/:id`       | Get single file details                 |
 
 ## File Upload Flow
 

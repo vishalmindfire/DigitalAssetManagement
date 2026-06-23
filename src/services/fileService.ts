@@ -45,8 +45,8 @@ export class FileService {
       params.append('createdate', String(cursor.createDate));
     }
 
-    if(search){
-       params.append('search', search);
+    if (search) {
+      params.append('search', search);
     }
 
     const response = await fetch(`${API_URL}/files?${params.toString()}`, {
@@ -115,48 +115,57 @@ export class FileService {
       })
     );
 
+    const bytesMap = getUploadFiles.map((f) => ({ loaded: 0, total: f.file?.size ?? 0 }));
+
     await Promise.all(
-      getUploadFiles.map(async (fileInfo: Files) => {
-        const { file, ...newFile } = fileInfo;
-        appDispatcher(addFile(newFile));
-        const xhr = new XMLHttpRequest();
-        const id = fileInfo.id;
-        FileService.updateFileSatus(id, 'PROCESSING');
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            const progress = Math.round((e.loaded / e.total) * 100);
-            const status = newFile.status;
-            appDispatcher(updateFileProgress({ id, progress, status }));
+      getUploadFiles.map((fileInfo: Files, index: number) => {
+        return new Promise<void>((resolve) => {
+          const { file, ...newFile } = fileInfo;
+          appDispatcher(addFile(newFile));
+          const xhr = new XMLHttpRequest();
+          const id = fileInfo.id;
+          FileService.updateFileSatus(id, 'PROCESSING');
 
-            updateProgress(progress);
-          }
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              bytesMap[index] = { loaded: e.loaded, total: e.total };
+              const totalLoaded = bytesMap.reduce((sum, b) => sum + b.loaded, 0);
+              const totalSize = bytesMap.reduce((sum, b) => sum + b.total, 0);
+              const overallProgress =
+                totalSize > 0 ? Math.round((totalLoaded / totalSize) * 100) : 0;
+
+              const progress = Math.round((e.loaded / e.total) * 100);
+              const status = newFile.status;
+              appDispatcher(updateFileProgress({ id, progress, status }));
+              updateProgress(overallProgress);
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status === 200 || xhr.status === 201) {
+              bytesMap[index] = { loaded: bytesMap[index].total, total: bytesMap[index].total };
+              const totalLoaded = bytesMap.reduce((sum, b) => sum + b.loaded, 0);
+              const totalSize = bytesMap.reduce((sum, b) => sum + b.total, 0);
+              updateProgress(totalSize > 0 ? Math.round((totalLoaded / totalSize) * 100) : 0);
+              appDispatcher(updateFileProgress({ id, progress: 100, status: 'COMPLETED' }));
+              FileService.updateFileSatus(id, 'COMPLETED');
+            } else {
+              appDispatcher(updateFileProgress({ id, progress: 0, status: 'FAILED' }));
+              FileService.updateFileSatus(id, 'FAILED');
+            }
+            resolve();
+          });
+
+          xhr.addEventListener('error', () => {
+            appDispatcher(updateFileProgress({ id, progress: 0, status: 'FAILED' }));
+            FileService.updateFileSatus(id, 'FAILED');
+            resolve();
+          });
+
+          xhr.open('PUT', fileInfo.url);
+          xhr.setRequestHeader('Content-Type', fileInfo.mimeType);
+          xhr.send(file);
         });
-
-        xhr.addEventListener('load', () => {
-          if (xhr.status === 200 || xhr.status === 201) {
-            const progress = 100;
-            const status = 'COMPLETED';
-            appDispatcher(updateFileProgress({ id, progress, status }));
-            FileService.updateFileSatus(id, status);
-          } else {
-            const progress = 0;
-            const status = 'FAILED';
-            appDispatcher(updateFileProgress({ id, progress, status }));
-            FileService.updateFileSatus(id, status);
-          }
-        });
-
-        xhr.addEventListener('error', () => {
-          const progress = 0;
-          const status = 'FAILED';
-          appDispatcher(updateFileProgress({ id, progress, status }));
-          FileService.updateFileSatus(id, status);
-        });
-
-        xhr.open('PUT', fileInfo.url);
-        xhr.setRequestHeader('Content-Type', fileInfo.mimeType);
-        xhr.send(file);
-        return xhr;
       })
     );
   }
@@ -180,7 +189,7 @@ export class FileService {
     const response = await fetch(`${API_URL}/files/tag/${tag}`, {
       method: 'GET',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
       const errData = await response.json();
@@ -194,7 +203,7 @@ export class FileService {
     const response = await fetch(`${API_URL}/files/${id}`, {
       method: 'GET',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
       const errData = await response.json();

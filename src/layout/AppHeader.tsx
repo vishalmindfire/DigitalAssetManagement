@@ -33,9 +33,9 @@ const AppHeader: React.FC = () => {
 
   const handleSearch = async () => {
     dispatch(clearFiles());
-    dispatch(setSearchValue({search : inputRef.current?.value ?? ''}))
+    dispatch(setSearchValue({ search: inputRef.current?.value ?? '' }));
     //fetch filtered files files
-  }
+  };
 
   const inputRef = useRef<HTMLInputElement>(null);
 

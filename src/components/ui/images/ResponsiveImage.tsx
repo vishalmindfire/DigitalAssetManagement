@@ -1,8 +1,8 @@
-interface props{
+interface props {
   imageUrl: string;
   altText: string;
 }
-export default function ResponsiveImage( { imageUrl, altText = "cover" }: props) {
+export default function ResponsiveImage({ imageUrl, altText = 'cover' }: props) {
   return (
     <div className="relative">
       <div className="overflow-hidden">

@@ -27,7 +27,7 @@ const initialState: FileState = {
   error: null,
   limit: 1,
   initialFetchDone: false,
-  searchValue: null
+  searchValue: null,
 };
 
 export const fetchFiles = createAsyncThunk<
@@ -50,7 +50,12 @@ export const fetchFiles = createAsyncThunk<
       });
     }
     try {
-      const response = await FileService.getFiles(userId, state.file.nextCursor, state.file.limit, state.file.searchValue);
+      const response = await FileService.getFiles(
+        userId,
+        state.file.nextCursor,
+        state.file.limit,
+        state.file.searchValue
+      );
       return response;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -90,16 +95,13 @@ const fileSlice = createSlice({
         file.status = action.payload.status;
       }
     },
-    updateFile: (
-      state,
-      action: PayloadAction<Files>
-    ) => {
-        state.files = state.files.map((file) => {
-                                        if(file.id === action.payload.id){
-                                                            file.url = action.payload.url;
-                                                          }
-                                                          return file;
-                                      })
+    updateFile: (state, action: PayloadAction<Files>) => {
+      state.files = state.files.map((file) => {
+        if (file.id === action.payload.id) {
+          file.url = action.payload.url;
+        }
+        return file;
+      });
     },
 
     markFileUploaded: (
@@ -147,11 +149,14 @@ const fileSlice = createSlice({
       state.error = null;
     },
 
-    setSearchValue: (state , action: PayloadAction<{
-                        search: string | null;
-                      }>) => {
-       state.searchValue = action.payload.search;
-    }
+    setSearchValue: (
+      state,
+      action: PayloadAction<{
+        search: string | null;
+      }>
+    ) => {
+      state.searchValue = action.payload.search;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -186,7 +191,7 @@ export const {
   removeFile,
   clearFiles,
   setSearchValue,
-  updateFile
+  updateFile,
 } = fileSlice.actions;
 
 export const selectFileById = (state: RootState, id: string) =>

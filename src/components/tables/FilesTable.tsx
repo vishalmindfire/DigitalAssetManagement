@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo} from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { List, type RowComponentProps, useDynamicRowHeight } from 'react-window';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@components/ui/table';
 import { type Files } from '@entities/File';
@@ -6,7 +6,7 @@ import Badge from '@components/ui/badge/Badge';
 import { useFiles } from '@hooks/useFiles';
 import { useAuth } from '@hooks/useAuth';
 import Popup from '@components/ui/modal/Popup';
-import {FileService} from '@services/fileService';
+import { FileService } from '@services/fileService';
 import AspectRatioVideo from '@components/ui/videos/AspectRatioVideo';
 import ResponsiveImage from '@components/ui/images/ResponsiveImage';
 import { updateFile } from '@reducers/fileSlice';
@@ -35,15 +35,18 @@ export default function FileTable({ section }: FilesProp) {
   const [fileError, setFileError] = useState<string | null>(null);
   const { files, loading, hasMore, loadMore } = useFiles();
   const { user } = useAuth();
-  const savedFiles = useMemo(() => ({
-    files: section === 'admin' ? [...files] : files.filter((file) => file.userId === user?.id),
-  }), [files, user?.id, section]);
+  const savedFiles = useMemo(
+    () => ({
+      files: section === 'admin' ? [...files] : files.filter((file) => file.userId === user?.id),
+    }),
+    [files, user?.id, section]
+  );
 
   const itemCount = hasMore ? savedFiles.files.length + 1 : savedFiles.files.length;
 
   const getRowHeight = useDynamicRowHeight({
-    defaultRowHeight: 45
-  })
+    defaultRowHeight: 45,
+  });
 
   const handleRowsRendered = useCallback(
     ({ stopIndex }: { startIndex: number; stopIndex: number }) => {
@@ -63,16 +66,16 @@ export default function FileTable({ section }: FilesProp) {
     const file = await FileService.filterFilesByID(id);
     dispatch(updateFile(file));
   };
- 
+
   const rowComponent = useCallback(({ index, style, files }: RowComponentProps<RowData>) => {
     const file = files[index];
 
-    if(files.length === 0){
+    if (files.length === 0) {
       return (
         <div style={style} className="flex items-center px-4 border-b text-gray-400 text-theme-sm">
           No files added.
         </div>
-      )
+      );
     }
 
     if (!file) {
@@ -82,10 +85,16 @@ export default function FileTable({ section }: FilesProp) {
         </div>
       );
     }
-   
+
     return (
       <div style={style}>
-        <TableRow key={file.id} className="border-b border-gray-100 dark:border-white/[0.05] hover:bg-gray-700" onClick={() => {handleRowClick(file.id)}}>
+        <TableRow
+          key={file.id}
+          className="border-b border-gray-100 dark:border-white/[0.05] hover:bg-gray-700"
+          onClick={() => {
+            handleRowClick(file.id);
+          }}
+        >
           <TableCell className={`${COLS[0].width} ${BODY_CELL} px-5 sm:px-6 min-w-0`}>
             <span className="break-all">{file.name}</span>
           </TableCell>
@@ -110,10 +119,10 @@ export default function FileTable({ section }: FilesProp) {
             >
               {file.status}
             </Badge>
-          </TableCell>     
+          </TableCell>
         </TableRow>
-        <AspectRatioVideo videoUrl={file.url}/> 
-        <ResponsiveImage imageUrl={file.url} altText={file.name}/>
+        <AspectRatioVideo videoUrl={file.url} />
+        <ResponsiveImage imageUrl={file.url} altText={file.name} />
       </div>
     );
   }, []);
@@ -132,7 +141,7 @@ export default function FileTable({ section }: FilesProp) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <List 
+              <List
                 rowCount={itemCount}
                 rowHeight={getRowHeight}
                 rowComponent={rowComponent}
@@ -153,5 +162,5 @@ export default function FileTable({ section }: FilesProp) {
         message={fileError ?? ''}
       />
     </>
-  )
+  );
 }

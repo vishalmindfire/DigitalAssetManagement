@@ -33,7 +33,7 @@ const DropzoneComponent: React.FC = () => {
       'image/webp': [],
       'image/svg+xml': [],
       'video/mp4': [],
-      'video/mpeg': []
+      'video/mpeg': [],
     },
   });
   return (
