@@ -6,16 +6,18 @@ import Badge from '@components/ui/badge/Badge';
 import { useFiles } from '@hooks/useFiles';
 import { useAuth } from '@hooks/useAuth';
 import Popup from '@components/ui/modal/Popup';
+import { Modal } from '@components/ui/modal';
 import { FileService } from '@services/fileService';
 import AspectRatioVideo from '@components/ui/videos/AspectRatioVideo';
 import ResponsiveImage from '@components/ui/images/ResponsiveImage';
 import { updateFile } from '@reducers/fileSlice';
-import { useAppDispatch } from '@store/store';
+import { useAppDispatch, useAppSelector } from '@store/store';
 type FilesProp = {
   section: string;
 };
 type RowData = {
   files: Files[];
+  onRowClick: (id: string) => void;
 };
 
 const COLS = [
@@ -33,13 +35,29 @@ const BODY_CELL =
 export default function FileTable({ section }: FilesProp) {
   const dispatch = useAppDispatch();
   const [fileError, setFileError] = useState<string | null>(null);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const selectedFile = useAppSelector((state) =>
+    selectedFileId ? (state.file.files.find((f) => f.id === selectedFileId) ?? null) : null
+  );
   const { files, loading, hasMore, loadMore } = useFiles();
   const { user } = useAuth();
+  const handleRowClick = useCallback(async (id: string) => {
+    try {
+      const file = await FileService.filterFilesByID(id);
+      if (!file) return;
+      dispatch(updateFile(file));
+      setSelectedFileId(id);
+    } catch (error) {
+      setFileError(error instanceof Error ? error.message : 'Unexpected Error');
+    }
+  }, [dispatch]);
+
   const savedFiles = useMemo(
     () => ({
       files: section === 'admin' ? [...files] : files.filter((file) => file.userId === user?.id),
+      onRowClick: handleRowClick,
     }),
-    [files, user?.id, section]
+    [files, user?.id, section, handleRowClick]
   );
 
   const itemCount = hasMore ? savedFiles.files.length + 1 : savedFiles.files.length;
@@ -62,17 +80,16 @@ export default function FileTable({ section }: FilesProp) {
     [itemCount, hasMore, loading, loadMore]
   );
 
-  const handleRowClick = async (id: string) => {
-    const file = await FileService.filterFilesByID(id);
-    dispatch(updateFile(file));
-  };
-
-  const rowComponent = useCallback(({ index, style, files }: RowComponentProps<RowData>) => {
+  const rowComponent = useCallback(({ index, style, files, onRowClick }: RowComponentProps<RowData>) => {
     const file = files[index];
 
     if (files.length === 0) {
       return (
-        <div style={style} className="flex items-center px-4 border-b text-gray-400 text-theme-sm">
+        <div
+          ref={(el) => { if (el) getRowHeight.observeRowElements([el]); }}
+          style={style}
+          className="flex items-center px-4 border-b text-gray-400 text-theme-sm"
+        >
           No files added.
         </div>
       );
@@ -80,20 +97,22 @@ export default function FileTable({ section }: FilesProp) {
 
     if (!file) {
       return (
-        <div style={style} className="flex items-center px-4 border-b text-gray-400 text-theme-sm ">
+        <div
+          ref={(el) => { if (el) getRowHeight.observeRowElements([el]); }}
+          style={style}
+          className="flex items-center px-4 border-b text-gray-400 text-theme-sm "
+        >
           Loading more...
         </div>
       );
     }
 
     return (
-      <div style={style}>
+      <div ref={(el) => { if (el) getRowHeight.observeRowElements([el]); }} style={style}>
         <TableRow
           key={file.id}
           className="border-b border-gray-100 dark:border-white/[0.05] hover:bg-gray-700"
-          onClick={() => {
-            handleRowClick(file.id);
-          }}
+          onClick={() => onRowClick(file.id)}
         >
           <TableCell className={`${COLS[0].width} ${BODY_CELL} px-5 sm:px-6 min-w-0`}>
             <span className="break-all">{file.name}</span>
@@ -121,11 +140,9 @@ export default function FileTable({ section }: FilesProp) {
             </Badge>
           </TableCell>
         </TableRow>
-        <AspectRatioVideo videoUrl={file.url} />
-        <ResponsiveImage imageUrl={file.url} altText={file.name} />
       </div>
     );
-  }, []);
+  }, [getRowHeight]);
   return (
     <>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -153,6 +170,34 @@ export default function FileTable({ section }: FilesProp) {
           </Table>
         </div>
       </div>
+      <Modal
+        isOpen={selectedFileId !== null}
+        onClose={() => setSelectedFileId(null)}
+        className="max-w-2xl p-6"
+      >
+        {selectedFile && (() => {
+          const isVideo =
+            selectedFile.mimeType?.startsWith('video/') ||
+            /\.(mp4|webm|ogg|mov|avi)$/i.test(selectedFile.name ?? '');
+          const isImage =
+            selectedFile.mimeType?.startsWith('image/') ||
+            /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(selectedFile.name ?? '');
+          return (
+            <div className="pt-8">
+              <p className="mb-4 truncate text-sm font-medium text-gray-700 dark:text-gray-300">
+                {selectedFile.name}
+              </p>
+              {isVideo && selectedFile.url && <AspectRatioVideo videoUrl={selectedFile.url} />}
+              {isImage && selectedFile.url && <ResponsiveImage imageUrl={selectedFile.url} altText={selectedFile.name} />}
+              {!isVideo && !isImage && (
+                <pre className="text-xs text-gray-500 break-all whitespace-pre-wrap">
+                  {JSON.stringify(selectedFile, null, 2)}
+                </pre>
+              )}
+            </div>
+          );
+        })()}
+      </Modal>
       <Popup
         open={fileError !== null}
         onClose={() => {

@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface ModalProps {
   children: React.ReactNode;
   showCloseButton?: boolean;
   isFullscreen?: boolean;
+  showBackdrop?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -16,6 +18,7 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   showCloseButton = true,
   isFullscreen = false,
+  showBackdrop = true,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -53,13 +56,16 @@ export const Modal: React.FC<ModalProps> = ({
     ? 'w-full h-full'
     : 'relative w-full rounded-3xl bg-white  dark:bg-gray-900';
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999">
-      {!isFullscreen && (
+      {!isFullscreen && showBackdrop && (
         <div
-          className="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
+          className="fixed inset-0 h-full w-full backdrop-blur-sm"
           onClick={onClose}
         ></div>
+      )}
+      {!isFullscreen && !showBackdrop && (
+        <div className="fixed inset-0" onClick={onClose}></div>
       )}
       <div
         ref={modalRef}
@@ -89,6 +95,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
         <div>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

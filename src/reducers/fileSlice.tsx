@@ -95,13 +95,11 @@ const fileSlice = createSlice({
         file.status = action.payload.status;
       }
     },
-    updateFile: (state, action: PayloadAction<Files>) => {
-      state.files = state.files.map((file) => {
-        if (file.id === action.payload.id) {
-          file.url = action.payload.url;
-        }
-        return file;
-      });
+    updateFile: (state, action: PayloadAction<Files | undefined>) => {
+      if (!action.payload) return;
+      state.files = state.files.map((file) =>
+        file.id === action.payload?.id ? { ...file, url : action.payload.url } : file
+      );
     },
 
     markFileUploaded: (

@@ -25,6 +25,8 @@ export interface FileResponseType {
   createdDate: string;
   uploadDate: string;
   userId: string;
+  url: string;
+  progress: number;
 }
 export class FileService {
   static async getFiles(
@@ -66,9 +68,11 @@ export class FileService {
         id: file.id,
         name: file.name,
         size: file.size,
+        mimeType: file.mimeType,
         status: file.status,
         userId: file.userId,
         uploadDate: file.createdDate,
+        objectKey: file.objectKey,
       };
     });
     return { success: true, files: files, nextCursor: data.nextCursor };
@@ -210,7 +214,19 @@ export class FileService {
       throw new ApiError(errData.message ?? 'Failed to update file', response.status);
     }
     const data = await response.json();
-    return data.file;
+    const file: FileResponseType = data.file ?? data;
+    return {
+      id: String(file.id),
+      name: file.name,
+      size: file.size,
+      mimeType: file.mimeType,
+      status: file.status as Files['status'],
+      progress: file.progress ?? 0,
+      url: file.url,
+      objectKey: file.objectKey,
+      uploadDate: (file.uploadDate ?? file.createdDate) as unknown as Date,
+      userId: file.userId,
+    };
   }
 
   static logError(error: unknown, stack: string): void {
